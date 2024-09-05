@@ -1,8 +1,7 @@
 pipeline {
     agent any
-
     tools {
-        maven  "maven3.9.8" 
+        maven  "maven" 
     }
 		stages {
 			stage('checkout') {
@@ -15,9 +14,16 @@ pipeline {
                     sh "mvn -Dmaven.test.failure.ignore=true clean package"
 				}
 			}
+			stage('CodeQulity') {
+				steps {
+					withSonarQubeEnv('My SonarQube Server') {
+					sh 'mvn clean package sonar:sonar'
+					}
+				}
+			}
 			stage('deploy to prod') {
 				steps {
-					deploy adapters: [tomcat9(credentialsId: 'tomcat-server', path: '', url: 'http://:44.203.70.89:8080/')], contextPath: null, war: '**/*.war'
+					deploy adapters: [tomcat9(credentialsId: 'tomcat-server', path: '', url:'http://172.31.33.151:8080/')], contextPath: null, war: '**/*.war'
 				}
 			}
 		}	
